@@ -21,9 +21,13 @@ should output something like:
 |kitty|~/codes/twt|1678636818493|1678636820317|
 
 # Installing:
-1. Install `cargo` and `xdotool`if not already installed with your package manager: e.g. `pacman -S cargo xdotool`
-2. Clone the repo, go into the directory and build it with `cargo build`
+1. Install `cargo` and `xdotool` if they are not already installed using your package manager: e.g. `pacman -S cargo xdotool`
+2. Clone the repo, go into the directory and run `make install`.
 
 # Usage
+- `make install` sets up the `twt` binary and start & enable the `systemd` daemon to run it. You can then control it with `systemd --user stop twt`, for example, if you want it to stop recording activity.
+- If you don't use systemd, run `make install-nosystemd` and run the daemon as convenient.
 
-The resultant binary on `CLONED_REPO_PATH/target/debug/twt` works like a daemon and registers your window usage. You can manually run it with you window manager or, if you're using `systemd`, WIP
+
+
+The resultant binary on `CLONED_REPO_PATH/target/debug/twt` works like a daemon and registers your window usage. You can put it on `~/.xinitrc` so it runs with your window manager.

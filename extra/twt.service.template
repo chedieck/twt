@@ -1,0 +1,11 @@
+[Unit]
+Description=twt
+PartOf=graphical-session.target
+
+[Service]
+Environment=DISPLAY=:0
+ExecStart=PATH_TO_EXECUTABLE
+Restart=always
+
+[Install]
+WantedBy=default.target
