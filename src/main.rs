@@ -69,7 +69,7 @@ fn set_log() -> Result<Log, Box<dyn Error>> {
         )
     }
 
-    let timestamp = chrono::Utc::now().timestamp();
+    let timestamp = chrono::Utc::now().timestamp_millis();
     Ok(
         Log {
             window_class_name: window_data[0].to_string(),
@@ -81,7 +81,7 @@ fn set_log() -> Result<Log, Box<dyn Error>> {
 }
 
 fn set_end_on_last_entry() -> Result<(), Box<dyn Error>> {
-    let timestamp = chrono::Utc::now().timestamp();
+    let timestamp = chrono::Utc::now().timestamp_millis();
     Command::new("sed")
         .arg("-i")
         .arg(format!(
