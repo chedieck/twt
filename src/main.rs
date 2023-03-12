@@ -36,7 +36,7 @@ impl Log {
     }
 
     fn get_log_path() -> Result<path::PathBuf, Box<dyn Error>> {
-        let dir_path = dirs::data_dir().unwrap().join("ttw/");
+        let dir_path = dirs::data_dir().unwrap().join("twt/");
         let csv_file_name = "main.csv";
         if !dir_path.is_dir() {
             std::fs::create_dir(&dir_path)?;
