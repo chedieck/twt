@@ -27,6 +27,37 @@ impl LogDuration {
             }
         )
     }
+
+    fn pretty_duration(&self) -> String {
+        match self.duration.num_seconds() {
+            n if n < 60 => format!("{n}s"),
+            n if (60..3600).contains(&n) => format!(
+                "{}m{}s",
+                self.duration.num_minutes(),
+                self.duration.num_seconds() % 60
+            ),
+            n if (3600..86400).contains(&n)=> format!(
+                "{}h{}m{}s",
+                self.duration.num_hours(),
+                self.duration.num_minutes() % 60,
+                self.duration.num_seconds() % 60
+            ),
+            n if (86400..604800).contains(&n)=> format!(
+                "{}d, {}h{}m{}s",
+                self.duration.num_days(),
+                self.duration.num_hours() % 24,
+                self.duration.num_minutes() % 60,
+                self.duration.num_seconds() % 60
+            ),
+            _ => format!("{}w, {}d, {}h{}m{}s",
+                self.duration.num_weeks(),
+                self.duration.num_days() % 7,
+                self.duration.num_hours() % 24,
+                self.duration.num_minutes() % 60,
+                self.duration.num_seconds() % 60
+            ),
+        }
+    }
 }
 
 impl LogDurationList {
@@ -94,7 +125,7 @@ impl LogDurationList {
         for log_duration in &self.log_durations {
             println!("{:pad$}: {}",
                 log_duration.window_class_name,
-                log_duration.duration.num_seconds(),
+                log_duration.pretty_duration(),
                 pad=padding);
         }
     }
