@@ -24,7 +24,7 @@ Installing:
 ---
 1. Install `cargo` and `xdotool` if they are not already installed using your package manager: e.g. `pacman -S cargo xdotool`
 2. Clone the repo, go into the directory and run `make install`.
-- `make install` sets up the `twt` binary and start & enable the `systemd` daemon to run it. You can then control it with `systemd --user stop twt`, for example, if you want it to stop recording activity. If you don't use systemd, run `make install-nosystemd` and run the daemon as convenient.
+- `make install` sets up the `twt` binary and starts & enables the `systemd` daemon to run it. You can then control it with `systemd --user stop twt`, for example, if you want it to stop recording activity. If you don't use systemd, run `make install-nosystemd` and run the daemon as convenient.
 
 Usage
 ---
