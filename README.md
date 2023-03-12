@@ -33,3 +33,4 @@ Usage
 TODO
 ---
 - [ ] Tool for exploring the data (draw plots, see tables, etc.).
+- [ ] Avoid having two running instances
