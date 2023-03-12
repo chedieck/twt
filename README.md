@@ -1,0 +1,29 @@
+TWT — Track Window Time
+---
+
+A simple software written in Rust to track how much time you spent on each window, and saves it to a CSV file.
+
+# Example
+
+Running:
+```
+$ cat ~/.local/share/twt/main.csv
+```
+should output something like:
+
+|window\_class\_name|window\_name|start|end|
+|-------------------|------------|-----|---|
+|firefox|Russian Dictionary — Mozilla Firefox|1678637136423|1678637137110|
+|kitty|bash|1678636643485|1678636667388|
+|firefox|chedieck/twt: A software to track the amount of time spend on each window. — Mozilla Firefox|1678636667388|1678636667622|
+|kitty|bash|1678636667622|1678636817461|
+|Anki|User 1 - Anki|1678636817461|1678636818493|
+|kitty|~/codes/twt|1678636818493|1678636820317|
+
+# Installing:
+1. Install `cargo` and `xdotool`if not already installed with your package manager: e.g. `pacman -S cargo xdotool`
+2. Clone the repo, go into the directory and build it with `cargo build`
+
+# Usage
+
+The resultant binary on `CLONED_REPO_PATH/target/debug/twt` works like a daemon and registers your window usage. You can manually run it with you window manager or, if you're using `systemd`, WIP
