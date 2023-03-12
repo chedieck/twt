@@ -49,7 +49,7 @@ impl Log {
     }
 }
 
-fn get_log() -> Result<Log, Box<dyn Error>> {
+fn set_log() -> Result<Log, Box<dyn Error>> {
     let window_data_string = String::from_utf8(
         Command::new("xdotool")
         .arg("getwindowfocus")
@@ -99,10 +99,10 @@ fn set_new_log(log: &Log) -> Result<(), Box<dyn Error>> {
 }
 
 fn main() -> Result<(), Box<dyn Error>> {
-    let mut last_log = get_log()?;
+    let mut last_log = set_log()?;
     set_new_log(&last_log)?;
     loop { // WIP ensure last timestamp saved at each iteration also
-        let new_log = get_log()?;
+        let new_log = set_log()?;
         if new_log.same_window_as(&last_log) {
             continue
         }
