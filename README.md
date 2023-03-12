@@ -33,4 +33,3 @@ Usage
 TODO
 ---
 - [ ] Tool for exploring the data (draw plots, see tables, etc.).
-- [ ] Allow configuration, consider a different window if only `window_name` changes even with `window_class_name` remaining the same.

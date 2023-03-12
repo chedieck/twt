@@ -19,6 +19,7 @@ struct Log {
 impl Log {
     fn same_window_as (&self, other_log: &Log) -> bool {
         self.window_class_name == other_log.window_class_name
+        && self.window_name == other_log.window_name
     }
 
     fn to_csv_line(&self) -> Result<String, Box<dyn Error>> {
