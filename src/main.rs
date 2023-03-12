@@ -86,12 +86,11 @@ fn set_new_log(log: &Log) -> Result<(), Box<dyn Error>> {
 fn main() -> Result<(), Box<dyn Error>> {
     let mut last_log = get_log()?;
     set_new_log(&last_log)?;
-    loop {
+    loop { // WIP ensure last timestamp saved at each iteration also
         let new_log = get_log()?;
         if new_log.same_window_as(&last_log) {
             continue
         }
-        dbg!(&new_log);
         set_end_on_last_entry()?;
         set_new_log(&new_log)?;
         last_log = new_log;
