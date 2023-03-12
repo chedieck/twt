@@ -27,3 +27,7 @@ should output something like:
 # Usage
 - `make install` sets up the `twt` binary and start & enable the `systemd` daemon to run it. You can then control it with `systemd --user stop twt`, for example, if you want it to stop recording activity.
 - If you don't use systemd, run `make install-nosystemd` and run the daemon as convenient.
+
+# TODO
+- [ ] Tool for exploring the data (draw plots, see tables, etc.).
+- [ ] Allow configuration, consider a different window if only `window_name` changes even with `window_class_name` remaining the same.
