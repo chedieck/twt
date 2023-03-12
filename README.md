@@ -33,14 +33,6 @@ Usage
 - `twt stat '2023-03-11 21:50:00'  '2023-03-12 14:30:00'` will show the most used windows from March 11 of 2023 21:50 UTC until March 12 of 2023 14:30 UTC. **Emphasis on UTC**.
 
 
-Motivation
----
-
-There are TONS of software for monitoring window activity out there. Most of them you can find on some bloated comercial website, offering you to download & use their propietary software _for free_ for 30 days, and then you have to pay them with something other than the data about all your software usage, accessed websites, etc.
-
-There are also some nice open-source alternatives, but I haven't had luck with any of them: some would require a system tray (which I don't use nor intend to); some would require too much manual intervention like starting and stopping projects; some would rely to much on GUI; some would just not work because they depended on 70 different Haskell packages and one of them didn't work on my computer...
-
-Of course, I did not try all of them. But I was already tired of having so much trouble on using something that I though should be so simple. I just wanted a software that would record the data of window usage, which is pretty straightforward, and then build stuff on top of this data.
 
 TODO
 ---
