@@ -4,7 +4,7 @@ PartOf=graphical-session.target
 
 [Service]
 Environment=DISPLAY=:0
-ExecStart=PATH_TO_EXECUTABLE
+ExecStart=PATH_TO_EXECUTABLE run
 Restart=always
 
 [Install]

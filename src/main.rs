@@ -100,7 +100,7 @@ fn set_new_log(log: &Log) -> Result<(), Box<dyn Error>> {
     Ok(())
 }
 
-fn main() -> Result<(), Box<dyn Error>> {
+fn run() -> Result<(), Box<dyn Error>> {
     let mut last_log = set_log()?;
     set_new_log(&last_log)?;
     loop {
@@ -114,3 +114,35 @@ fn main() -> Result<(), Box<dyn Error>> {
         last_log = new_log;
     }
 }
+
+fn help() {
+    println!("Help message, WIP")
+}
+
+fn main() -> Result<(), Box<dyn Error>> {
+    let args: Vec<String> = std::env::args().collect();
+    match args.len() {
+        1 => {
+            help();
+            Ok(())
+        },
+        _ => {
+            match args[1].as_str() {
+                "run" => {
+                    run()?;
+                    Ok(())
+                },
+                "stat" => {
+                    let log_duration_list = stat::LogDurationList::create_for_scope(&args[2], &args[3])?;
+                    log_duration_list.log_durations_condensed_by_class().show_simple_use_list();
+                    Ok(())
+                },
+                _ => {
+                    help();
+                    Ok(())
+                }
+            }
+        }
+    }
+}
+
