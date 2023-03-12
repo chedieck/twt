@@ -1,7 +1,7 @@
 TWT — Track Window Time
 ---
 
-A simple software written in Rust to track how much time you spent on each window, and saves it to a CSV file.
+A simple software written in Rust to track how much time you spent on each window and save it to a CSV file.
 
 # Example
 
@@ -27,7 +27,3 @@ should output something like:
 # Usage
 - `make install` sets up the `twt` binary and start & enable the `systemd` daemon to run it. You can then control it with `systemd --user stop twt`, for example, if you want it to stop recording activity.
 - If you don't use systemd, run `make install-nosystemd` and run the daemon as convenient.
-
-
-
-The resultant binary on `CLONED_REPO_PATH/target/debug/twt` works like a daemon and registers your window usage. You can put it on `~/.xinitrc` so it runs with your window manager.
