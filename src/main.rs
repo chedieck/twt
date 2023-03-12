@@ -43,7 +43,7 @@ impl Log {
         }
         let file_path = dir_path.join(csv_file_name);
         if !file_path.is_file() {
-            let header_string = "window_class_name\twindow_name\tstart\tend\t\n";
+            let header_string = "window_class_name\twindow_name\tstart\tend\n";
             let mut file = std::fs::File::create(&file_path)?;
             file.write_all(header_string.as_bytes())?;
         }
