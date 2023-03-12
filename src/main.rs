@@ -5,6 +5,8 @@ use std::error::Error;
 use std::path;
 
 
+const LOG_CHECK_DELAY_MS: u64 = 100;
+
 
 #[derive(Debug)]
 struct Log {
@@ -85,7 +87,7 @@ fn set_end_on_last_entry() -> Result<(), Box<dyn Error>> {
     Command::new("sed")
         .arg("-i")
         .arg(format!(
-                "$s/\t/\t{timestamp}/3"
+                "$s/\t[^\t]*/\t{timestamp}/3"
         ))
         .arg(Log::get_log_path()?)
         .output()?;
@@ -101,12 +103,13 @@ fn set_new_log(log: &Log) -> Result<(), Box<dyn Error>> {
 fn main() -> Result<(), Box<dyn Error>> {
     let mut last_log = set_log()?;
     set_new_log(&last_log)?;
-    loop { // WIP ensure last timestamp saved at each iteration also
+    loop {
+        std::thread::sleep(std::time::Duration::from_millis(LOG_CHECK_DELAY_MS));
         let new_log = set_log()?;
+        set_end_on_last_entry()?;
         if new_log.same_window_as(&last_log) {
             continue
         }
-        set_end_on_last_entry()?;
         set_new_log(&new_log)?;
         last_log = new_log;
     }
