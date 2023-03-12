@@ -4,12 +4,14 @@ use std::io::prelude::*;
 use std::error::Error;
 use std::path;
 
+mod stat;
+
 
 const LOG_CHECK_DELAY_MS: u64 = 100;
 
 
 #[derive(Debug)]
-struct Log {
+pub struct Log {
     window_class_name: String,
     window_name: String,
     start: Option<i64>,
