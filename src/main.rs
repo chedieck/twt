@@ -2,9 +2,9 @@ use std::process::Command;
 use std::fs::OpenOptions;
 use std::io::prelude::*;
 use std::error::Error;
+use std::path;
 
 
-const MAIN_LOG_CSV: &str = "/home/ttv1/codes/ttw/src/main.csv";
 
 #[derive(Debug)]
 struct Log {
@@ -31,6 +31,21 @@ impl Log {
             },
             None => panic!("Missing start date")
         }
+    }
+
+    fn get_log_path() -> Result<path::PathBuf, Box<dyn Error>> {
+        let dir_path = dirs::data_dir().unwrap().join("ttw/");
+        let csv_file_name = "main.csv";
+        if !dir_path.is_dir() {
+            std::fs::create_dir(&dir_path)?;
+        }
+        let file_path = dir_path.join(csv_file_name);
+        if !file_path.is_file() {
+            let header_string = "window_class_name\twindow_name\tstart\tend\t\n";
+            let mut file = std::fs::File::create(&file_path)?;
+            file.write_all(header_string.as_bytes())?;
+        }
+        Ok(file_path)
     }
 }
 
@@ -72,13 +87,13 @@ fn set_end_on_last_entry() -> Result<(), Box<dyn Error>> {
         .arg(format!(
                 "$s/\t/\t{timestamp}/3"
         ))
-        .arg("src/main.csv")
+        .arg(Log::get_log_path()?)
         .output()?;
     Ok(())
 }
 
 fn set_new_log(log: &Log) -> Result<(), Box<dyn Error>> {
-    let mut file = OpenOptions::new().append(true).open(MAIN_LOG_CSV)?;
+    let mut file = OpenOptions::new().append(true).open(Log::get_log_path()?)?;
     writeln!(file, "{}", log.to_csv_line()?)?;
     Ok(())
 }
