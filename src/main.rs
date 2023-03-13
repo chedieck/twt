@@ -119,7 +119,14 @@ fn run() -> Result<(), Box<dyn Error>> {
 }
 
 fn help() {
-    println!("Help message, WIP")
+    println!("Usage: twt [command] [..args]");
+    println!("[command]    [..args]                   description");
+    println!("-------");
+    println!("topc         [start_date] [end_date]    Shows most used programs between the two dates, by window class");
+    println!("topn         [start_date] [end_date]    Shows most used programs between the two dates, by window name");
+    println!("-------");
+    println!("[start_date] and [end_date] should be ISO formatted strings on UTC timezone,");
+    println!("that is: %Y-%m-%d %H:%M:%S, such as e.g: 2023-03-13 17:29:00.");
 }
 
 fn main() -> Result<(), Box<dyn Error>> {
