@@ -1,6 +1,6 @@
 # TWT — Track Window Time
 
-A simple software written in Rust to track how much time you spent on each window and save it to a CSV file.
+A simple software for X11, written in Rust, to track how much time you spent on each window and save it to a CSV file.
 
 
 # Summary
