@@ -92,7 +92,7 @@ impl LogDurationList {
 
     }
 
-    fn from_hash_map(map: HashMap<&str, Duration>) -> Self {
+    fn from_duration_hash_map(map: HashMap<&str, Duration>) -> Self {
         let mut log_durations = map.iter()
                 .map(|t| LogDuration {
                     window_class_name: String::from(*t.0),
@@ -106,6 +106,35 @@ impl LogDurationList {
         }
     }
 
+    fn from_name_and_duration_hash_map(map: HashMap<(&str, &str), Duration>) -> Self {
+        let mut log_durations = map.iter()
+                .map(|t| LogDuration {
+                    window_class_name: String::from(t.0.1),
+                    window_name: Some(String::from(t.0.1)),
+                    duration: *t.1
+                })
+            .collect::<Vec<LogDuration>>();
+        log_durations.sort_by(|a, b| b.duration.partial_cmp(&a.duration).unwrap());
+         Self {
+            log_durations
+        }
+    }
+
+    pub fn log_durations_condensed_by_class_and_name(&self) -> Self {
+        let mut map: HashMap<(&str, &str), Duration> = HashMap::new();
+
+        for log_duration in &self.log_durations {
+            let index = (log_duration.window_class_name.as_str(),
+            log_duration.window_name.as_ref().unwrap().as_str());
+            match map.get(&index) {
+                Some(&duration) => map.insert(index, duration + log_duration.duration),
+                _ =>  map.insert(index, log_duration.duration)
+            };
+        }
+
+        Self::from_name_and_duration_hash_map(map)
+    }
+
     pub fn log_durations_condensed_by_class(&self) -> Self {
         let mut map: HashMap<&str, Duration> = HashMap::new();
 
@@ -117,7 +146,7 @@ impl LogDurationList {
             };
         }
 
-        Self::from_hash_map(map)
+        Self::from_duration_hash_map(map)
     }
 
     pub fn show_simple_use_list(&self) {

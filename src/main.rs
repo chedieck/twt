@@ -135,9 +135,14 @@ fn main() -> Result<(), Box<dyn Error>> {
                     run()?;
                     Ok(())
                 },
-                "stat" => {
+                "topc" => {
                     let log_duration_list = stat::LogDurationList::create_for_scope(&args[2], &args[3])?;
                     log_duration_list.log_durations_condensed_by_class().show_simple_use_list();
+                    Ok(())
+                },
+                "topn" => {
+                    let log_duration_list = stat::LogDurationList::create_for_scope(&args[2], &args[3])?;
+                    log_duration_list.log_durations_condensed_by_class_and_name().show_simple_use_list();
                     Ok(())
                 },
                 _ => {

@@ -30,7 +30,8 @@ Installing:
 
 Usage
 ---
-- `twt stat '2023-03-11 21:50:00'  '2023-03-12 14:30:00'` will show the most used windows from March 11 of 2023 21:50 UTC until March 12 of 2023 14:30 UTC. **Emphasis on UTC**.
+- `twt topc '2023-03-11 21:50:00'  '2023-03-12 14:30:00'` will show the most used windows by class name, from March 11 of 2023 21:50 UTC until March 12 of 2023 14:30 UTC. **Emphasis on UTC**.
+- `twt topn '2023-03-11 21:50:00'  '2023-03-12 14:30:00'` will do the same, but by window name.
 
 
 
