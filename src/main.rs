@@ -108,8 +108,11 @@ fn run() -> Result<(), Box<dyn Error>> {
     set_new_log(&last_log)?;
     loop {
         std::thread::sleep(std::time::Duration::from_millis(LOG_CHECK_DELAY_MS));
-        let new_log = set_log()?;
         set_end_on_last_entry()?;
+        let new_log_result = set_log();
+        let Ok(new_log) = new_log_result else {
+            continue;
+        };
         if new_log.same_window_as(&last_log) {
             continue
         }
