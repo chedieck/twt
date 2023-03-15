@@ -10,7 +10,7 @@ mod stat;
 const LOG_CHECK_DELAY_MS: u64 = 100;
 
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Log {
     window_class_name: String,
     window_name: String,
@@ -54,7 +54,7 @@ impl Log {
     }
 }
 
-fn set_log() -> Result<Log, Box<dyn Error>> {
+fn get_current_window_log() -> Result<Log, Box<dyn Error>> {
     let window_data_string = String::from_utf8(
         Command::new("xdotool")
         .arg("getwindowfocus")
@@ -103,21 +103,32 @@ fn set_new_log(log: &Log) -> Result<(), Box<dyn Error>> {
     Ok(())
 }
 
+fn start () -> Result<Log, Box<dyn Error>>  {
+    let first_log = get_current_window_log()?; 
+    set_new_log(&first_log)?;
+    Ok(first_log)
+}
+
 fn run() -> Result<(), Box<dyn Error>> {
-    let mut last_log = set_log()?;
-    set_new_log(&last_log)?;
+    let mut start_new_log = true;
+    let mut last_log = start()?;
     loop {
-        std::thread::sleep(std::time::Duration::from_millis(LOG_CHECK_DELAY_MS));
-        set_end_on_last_entry()?;
-        let new_log_result = set_log();
-        let Ok(new_log) = new_log_result else {
+        let current_window_log_result = get_current_window_log();
+        let Ok(current_window_log) = current_window_log_result else {
+            start_new_log = true;
             continue;
         };
-        if new_log.same_window_as(&last_log) {
-            continue
+        if start_new_log {
+            set_new_log(&current_window_log)?;
+            last_log = current_window_log.clone();
+            start_new_log = false
+        } else {
+            set_end_on_last_entry()?;
         }
-        set_new_log(&new_log)?;
-        last_log = new_log;
+        if !current_window_log.same_window_as(&last_log) {
+            start_new_log = true
+        }
+        std::thread::sleep(std::time::Duration::from_millis(LOG_CHECK_DELAY_MS));
     }
 }
 
