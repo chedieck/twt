@@ -104,7 +104,11 @@ fn set_new_log(log: &Log) -> Result<(), Box<dyn Error>> {
 }
 
 fn start () -> Result<Log, Box<dyn Error>>  {
-    let first_log = get_current_window_log()?; 
+    let first_log_result = get_current_window_log(); 
+    let Ok(first_log) = first_log_result else {
+        std::thread::sleep(std::time::Duration::from_millis(LOG_CHECK_DELAY_MS));
+        return start()
+    };
     set_new_log(&first_log)?;
     Ok(first_log)
 }
