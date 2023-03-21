@@ -3,6 +3,7 @@ use std::error::Error;
 use std::collections::HashMap;
 use csv::ReaderBuilder;
 use super::Log;
+use std::process::Command;
 
 
 const EXPECTED_DATE_FORMAT: &str = "%Y-%m-%d %H:%M:%S";
@@ -18,7 +19,11 @@ pub struct LogDurationList {
 }
 
 impl LogDuration { 
-    fn from_record (record: csv::StringRecord, duration: Duration) -> Result<Self, Box<dyn Error>> {
+    fn from_record(record: csv::StringRecord) -> Result<Self, Box<dyn Error>> {
+        let record_start = record[2].parse::<i64>()?;
+        let record_end = record[3].parse::<i64>()?;
+
+        let duration = Duration::milliseconds(record_end - record_start);
         Ok(
             Self {
                 window_class_name:  record[0].to_string(),
@@ -27,6 +32,18 @@ impl LogDuration {
             }
         )
     }
+
+    fn from_record_on_scope (record: csv::StringRecord, duration: Duration) -> Result<Self, Box<dyn Error>> {
+        Ok(
+            Self {
+                window_class_name:  record[0].to_string(),
+                window_name:  Some(record[1].to_string()),
+                duration
+            }
+        )
+    }
+
+
 
     fn pretty_duration(&self) -> String {
         match self.duration.num_seconds() {
@@ -61,27 +78,55 @@ impl LogDuration {
 }
 
 impl LogDurationList {
+    fn get_reader() -> Result<csv::Reader<std::fs::File>, Box<dyn Error>>{
+        Ok(
+            ReaderBuilder::new().
+            delimiter(b'\t')
+            .from_path(Log::get_log_path()?)?
+        )
+    }
+
+    fn from_vec(log_durations: Vec<LogDuration>) -> Self {
+        return Self {
+            log_durations
+        }
+    }
+
     pub fn create_for_scope(begin_date_str: &str, end_date_str: &str) -> Result<Self, Box<dyn Error>> {
         let begin = iso_to_timestamp_millis(begin_date_str)?;
         let end = iso_to_timestamp_millis(end_date_str)?;
 
 
-        let mut rdr = ReaderBuilder::new().
-        delimiter(b'\t')
-        .from_path(Log::get_log_path()?)?;
+        let mut rdr = Self::get_reader()?;
         let mut log_durations: Vec<LogDuration> = vec![];
         for result in rdr.records() {
             let record = result?;
             let duration = get_record_duration_for_scope(begin, end, &record)?;
-            let log_duration = LogDuration::from_record(record, duration)?;
+            let log_duration = LogDuration::from_record_on_scope(record, duration)?;
             log_durations.push(log_duration)
         }
 
-        Ok(
-            Self {
-                log_durations
-            }
-        )
+        Ok(Self::from_vec(log_durations))
+    }
+
+    pub fn create_for_last_n(n: &usize) -> Result<Self, Box<dyn Error>> {
+        let tail_bytes: &[u8] = &Command::new("tail")
+            .arg("-n")
+            .arg(format!("{n}"))
+            .arg(Log::get_log_path()?)
+            .output().expect("Fail to tail log file.")
+            .stdout;
+        let mut rdr = ReaderBuilder::new()
+            .delimiter(b'\t')
+            .from_reader(tail_bytes);
+        let mut log_durations: Vec<LogDuration> = vec![];
+
+        for result in rdr.records() {
+            let record = result?;
+            let log_duration = LogDuration::from_record(record)?;
+            log_durations.push(log_duration)
+        }
+        Ok(Self::from_vec(log_durations))
     }
 
     fn get_max_log_name_length(&self) -> usize {

@@ -142,6 +142,8 @@ fn help() {
     println!("-------");
     println!("topc         [start_date] [end_date]    Shows most used programs between the two dates, by window class");
     println!("topn         [start_date] [end_date]    Shows most used programs between the two dates, by window name");
+    println!("lastcn       [n]                        Shows the time spent on the last [n] logs");
+    println!("lastnn       [n]                        Shows the time spent on the last [n] logs");
     println!("-------");
     println!("[start_date] and [end_date] should be ISO formatted strings on UTC timezone,");
     println!("that is: %Y-%m-%d %H:%M:%S, such as e.g: 2023-03-13 17:29:00.");
@@ -167,6 +169,18 @@ fn main() -> Result<(), Box<dyn Error>> {
                 },
                 "topn" => {
                     let log_duration_list = stat::LogDurationList::create_for_scope(&args[2], &args[3])?;
+                    log_duration_list.log_durations_condensed_by_class_and_name().show_simple_use_list();
+                    Ok(())
+                },
+                "lastcn" => {
+                    let n = args[2].parse::<usize>()?;
+                    let log_duration_list = stat::LogDurationList::create_for_last_n(&n)?;
+                    log_duration_list.log_durations_condensed_by_class().show_simple_use_list();
+                    Ok(())
+                },
+                "lastnn" => {
+                    let n = args[2].parse::<usize>()?;
+                    let log_duration_list = stat::LogDurationList::create_for_last_n(&n)?;
                     log_duration_list.log_durations_condensed_by_class_and_name().show_simple_use_list();
                     Ok(())
                 },
