@@ -8,6 +8,7 @@ mod stat;
 
 
 const LOG_CHECK_DELAY_MS: u64 = 100;
+const AFK_INTERVAL_MS: u64 = 5 * 60 * 1000; // 5 minutes
 
 
 #[derive(Debug, Clone)]
