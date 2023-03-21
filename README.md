@@ -38,6 +38,6 @@ Usage
 TODO
 ---
 - [ ] Tool for exploring the data (draw plots, see tables, cluster by tags, etc.).
-- [ ] Avoid having two running instances
+- [x] Avoid having two running instances
 - [ ] AFK detector
 - [ ] Better error messages for arg parsing

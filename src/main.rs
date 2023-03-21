@@ -114,7 +114,25 @@ fn start () -> Result<Log, Box<dyn Error>>  {
     Ok(first_log)
 }
 
+fn is_running_already() -> Result<bool, Box<dyn Error>> {
+    let pids_len = String::from_utf8(
+        Command::new("pidof")
+        .arg("twt")
+        .output()?
+        .stdout
+    )?
+        .split_whitespace()
+        .count();
+    if pids_len > 1 {
+        return Ok(true)
+    }
+    Ok(false)
+}
+
 fn run() -> Result<(), Box<dyn Error>> {
+    if is_running_already()? {
+        return Err("There is already a running instance.".into())
+    }
     let mut start_new_log = true;
     let mut last_log = start()?;
     loop {
@@ -141,6 +159,8 @@ fn help() {
     println!("Usage: twt [command] [..args]");
     println!("[command]    [..args]                   description");
     println!("-------");
+    println!("run          Collect window usage information and save it to $HOME/.local/share/twt/main.csv.");
+    println!("             This should be ran as a daemon, can't be run twice.");
     println!("topc         [start_date] [end_date]    Shows most used programs between the two dates, by window class");
     println!("topn         [start_date] [end_date]    Shows most used programs between the two dates, by window name");
     println!("lastcn       [n]                        Shows the time spent on the last [n] logs");
