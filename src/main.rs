@@ -164,6 +164,7 @@ fn run() -> Result<(), Box<dyn Error>> {
     loop {
         std::thread::sleep(std::time::Duration::from_millis(LOG_CHECK_DELAY_MS));
         if is_user_afk(&conn, root_window) {
+            start_new_log = true;
             continue
         }
         let current_window_log_result = get_current_window_log();
