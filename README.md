@@ -50,5 +50,5 @@ TODO
 - [x] Basic stats
 - [x] Avoid having two running instances
 - [x] Better error messages for arg parsing
-- [ ] AFK detector
+- [x] AFK detector
 - [ ] Allow regex tagging on window name

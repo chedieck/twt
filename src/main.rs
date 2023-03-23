@@ -4,12 +4,14 @@ use std::io::prelude::*;
 use std::error::Error;
 use duration_string::DurationString;
 use std::path;
+use xcb::x::Window;
+use xcb::Connection;
 
 mod stat;
 
 
 const LOG_CHECK_DELAY_MS: u64 = 100;
-const AFK_INTERVAL_MS: u64 = 5 * 60 * 1000; // 5 minutes
+const AFK_INTERVAL_MS: u32 = 5 * 60 * 1000; // 5 minutes
 
 
 #[derive(Debug, Clone)]
@@ -129,14 +131,41 @@ fn is_running_already() -> Result<bool, Box<dyn Error>> {
     }
     Ok(false)
 }
+fn is_user_afk (conn: &Connection, window: Window) -> bool {
+    let query_info = xcb::screensaver::QueryInfo {
+        drawable: xcb::x::Drawable::Window(window)
+    };
+    let query_info_cookie = conn.send_request(&query_info);
+    let query_info_reply = conn.wait_for_reply(query_info_cookie).unwrap();
+    if query_info_reply.ms_since_user_input() > AFK_INTERVAL_MS {
+        return true
+    }
+    false
+}
 
 fn run() -> Result<(), Box<dyn Error>> {
     if is_running_already()? {
         return Err("There is already a running instance.".into())
     }
+
+    // Connect to the X server.
+    let (conn, screen_num) = xcb::Connection::connect_with_extensions(
+        None, &[xcb::Extension::ScreenSaver], &[])?;
+    let setup = conn.get_setup();
+    let screen = setup.roots().nth(screen_num as usize).unwrap();
+    let root_window = screen.root();
+
+
+    // Start logs
     let mut start_new_log = true;
     let mut last_log = start()?;
+
+    // Update logs on a loop
     loop {
+        std::thread::sleep(std::time::Duration::from_millis(LOG_CHECK_DELAY_MS));
+        if is_user_afk(&conn, root_window) {
+            continue
+        }
         let current_window_log_result = get_current_window_log();
         let Ok(current_window_log) = current_window_log_result else {
             start_new_log = true;
@@ -151,7 +180,6 @@ fn run() -> Result<(), Box<dyn Error>> {
         if !current_window_log.same_window_as(&last_log) {
             start_new_log = true
         }
-        std::thread::sleep(std::time::Duration::from_millis(LOG_CHECK_DELAY_MS));
     }
 }
 
