@@ -33,7 +33,7 @@ impl LogDuration {
         )
     }
 
-    fn from_record_on_scope (record: csv::StringRecord, duration: Duration) -> Result<Self, Box<dyn Error>> {
+    fn from_record_on_duration (record: csv::StringRecord, duration: Duration) -> Result<Self, Box<dyn Error>> {
         Ok(
             Self {
                 window_class_name:  record[0].to_string(),
@@ -102,7 +102,7 @@ impl LogDurationList {
         for result in rdr.records() {
             let record = result?;
             let duration = get_record_duration_for_scope(begin, end, &record)?;
-            let log_duration = LogDuration::from_record_on_scope(record, duration)?;
+            let log_duration = LogDuration::from_record_on_duration(record, duration)?;
             log_durations.push(log_duration)
         }
 
