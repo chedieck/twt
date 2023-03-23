@@ -47,7 +47,8 @@ impl LogDuration {
 
     fn pretty_duration(&self) -> String {
         match self.duration.num_seconds() {
-            n if n < 60 => format!("{n}s"),
+            n if n < 1 => format!("{}ms", self.duration.num_milliseconds()),
+            n if (1..60).contains(&n) => format!("{n}s"),
             n if (60..3600).contains(&n) => format!(
                 "{}m{}s",
                 self.duration.num_minutes(),
