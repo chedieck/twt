@@ -18,7 +18,7 @@ pub struct LogDurationList {
     log_durations: Vec<LogDuration>
 }
 
-impl LogDuration { 
+impl LogDuration {
     fn from_record(record: csv::StringRecord) -> Result<Self, Box<dyn Error>> {
         let record_start = record[2].parse::<i64>()?;
         let record_end = record[3].parse::<i64>()?;
@@ -74,6 +74,21 @@ impl LogDuration {
                 self.duration.num_seconds() % 60
             ),
         }
+    }
+}
+
+mod tests {
+    use super::*;
+    use chrono::Duration;
+
+    #[test]
+    fn test_duration_from_record() {
+        let record = csv::StringRecord::from(vec!["kitty", "bash", "1678898607940", "1678898608940"]);
+
+        let log_duration = LogDuration::from_record(record).unwrap();
+        assert_eq!(log_duration.window_name, Some(String::from("bash")));
+        assert_eq!(log_duration.window_class, String::from("kitty"));
+        assert_eq!(log_duration.duration, Duration::seconds(1));
     }
 }
 
