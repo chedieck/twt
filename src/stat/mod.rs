@@ -142,7 +142,7 @@ impl LogDurationList {
         Ok(Self::from_vec(log_durations))
     }
 
-    fn get_max_log_name_length(&self) -> usize {
+    fn get_max_log_class_length(&self) -> usize {
         self.log_durations.iter()
         .map(|l| l.window_class.len())
         .max()
@@ -150,22 +150,32 @@ impl LogDurationList {
 
     }
 
+    fn get_max_log_name_length(&self) -> usize {
+        self.log_durations.iter()
+        .map(|l| l.window_name.as_ref().unwrap_or(&"".to_string()).len())
+        .max()
+        .unwrap()
+
+    }
+
     fn from_duration_hash_map(map: HashMap<&str, Duration>) -> Self {
         let mut log_durations = map.iter()
-                .map(|t| LogDuration {
-                    window_class: String::from(*t.0),
-                    window_name: None,
-                    duration: *t.1
-                })
-            .collect::<Vec<LogDuration>>();
+            .filter(|t| t.1.num_milliseconds() != 0)
+            .map(|t| LogDuration {
+                window_class: String::from(*t.0),
+                window_name: None,
+                duration: *t.1
+            })
+        .collect::<Vec<LogDuration>>();
         log_durations.sort_by(|a, b| b.duration.partial_cmp(&a.duration).unwrap());
-         Self {
+        Self {
             log_durations
         }
     }
 
     fn from_name_and_duration_hash_map(map: HashMap<(&str, &str), Duration>) -> Self {
         let mut log_durations = map.iter()
+                .filter(|t| t.1.num_milliseconds() != 0)
                 .map(|t| LogDuration {
                     window_class: String::from(t.0.0),
                     window_name: Some(String::from(t.0.1)),
@@ -209,12 +219,19 @@ impl LogDurationList {
         Self::from_duration_hash_map(map)
     }
 
-    pub fn show_class_usage_list(&self) {
+    pub fn show_name_usage_list(&self) {
         let padding = self.get_max_log_name_length() + 1;
         for log_duration in &self.log_durations {
-            if log_duration.duration.num_milliseconds() == 0 {
-                continue
-            }
+            println!("{:pad$}: {}",
+                log_duration.window_name.as_ref().unwrap_or(&"".to_string()),
+                log_duration.pretty_duration(),
+                pad=padding);
+        }
+    }
+
+    pub fn show_class_usage_list(&self) {
+        let padding = self.get_max_log_class_length() + 1;
+        for log_duration in &self.log_durations {
             println!("{:pad$}: {}",
                 log_duration.window_class,
                 log_duration.pretty_duration(),
