@@ -11,8 +11,8 @@ $ cat ~/.local/share/twt/main.csv
 ```
 will output something like:
 
-|window\_class\_name|window\_name|start|end|
-|-------------------|------------|-----|---|
+|window\_class|window\_name|start|end|
+|-------------:------------|-----|---|
 |firefox|Russian Dictionary — Mozilla Firefox|1678637136423|1678637137110|
 |kitty|bash|1678636643485|1678636667388|
 |firefox|chedieck/twt: A software to track the amount of time spend on each window. — Mozilla Firefox|1678636667388|1678636667622|
@@ -30,7 +30,7 @@ Installing:
 
 Usage
 ---
-- `twt topc '2023-03-11 21:50:00'  '2023-03-12 14:30:00'` will show the most used windows by class name, from March 11 of 2023 21:50 UTC until March 12 of 2023 14:30 UTC. **Emphasis on UTC**.
+- `twt topc '2023-03-11 21:50:00'  '2023-03-12 14:30:00'` will show the most used windows by class , from March 11 of 2023 21:50 UTC until March 12 of 2023 14:30 UTC. **Emphasis on UTC**.
 - `twt topn '2023-03-11 21:50:00'  '2023-03-12 14:30:00'` will do the same, but by window name.
 
 

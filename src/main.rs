@@ -14,7 +14,7 @@ const AFK_INTERVAL_MS: u64 = 5 * 60 * 1000; // 5 minutes
 
 #[derive(Debug, Clone)]
 pub struct Log {
-    window_class_name: String,
+    window_class: String,
     window_name: String,
     start: Option<i64>,
     end: Option<i64>,
@@ -22,7 +22,7 @@ pub struct Log {
 
 impl Log {
     fn same_window_as (&self, other_log: &Log) -> bool {
-        self.window_class_name == other_log.window_class_name
+        self.window_class == other_log.window_class
         && self.window_name == other_log.window_name
     }
 
@@ -30,7 +30,7 @@ impl Log {
         match self.start {
             Some(start) => {
                 return Ok(format!("{}\t{}\t{}\t{}",
-                    self.window_class_name,
+                    self.window_class,
                     self.window_name,
                     start,
                     ""
@@ -48,7 +48,7 @@ impl Log {
         }
         let file_path = dir_path.join(csv_file_name);
         if !file_path.is_file() {
-            let header_string = "window_class_name\twindow_name\tstart\tend\n";
+            let header_string = "window_class\twindow_name\tstart\tend\n";
             let mut file = std::fs::File::create(&file_path)?;
             file.write_all(header_string.as_bytes())?;
         }
@@ -79,7 +79,7 @@ fn get_current_window_log() -> Result<Log, Box<dyn Error>> {
     let timestamp = chrono::Utc::now().timestamp_millis();
     Ok(
         Log {
-            window_class_name: window_data[0].to_string(),
+            window_class: window_data[0].to_string(),
             window_name: window_data[1].to_string(),
             start: Some(timestamp),
             end: None

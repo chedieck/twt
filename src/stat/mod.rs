@@ -9,7 +9,7 @@ use std::process::Command;
 const EXPECTED_DATE_FORMAT: &str = "%Y-%m-%d %H:%M:%S";
 
 struct LogDuration {
-    window_class_name: String,
+    window_class: String,
     window_name: Option<String>,
     duration: Duration
 }
@@ -26,7 +26,7 @@ impl LogDuration {
         let duration = Duration::milliseconds(record_end - record_start);
         Ok(
             Self {
-                window_class_name:  record[0].to_string(),
+                window_class:  record[0].to_string(),
                 window_name:  Some(record[1].to_string()),
                 duration
             }
@@ -36,7 +36,7 @@ impl LogDuration {
     fn from_record_on_duration (record: csv::StringRecord, duration: Duration) -> Result<Self, Box<dyn Error>> {
         Ok(
             Self {
-                window_class_name:  record[0].to_string(),
+                window_class:  record[0].to_string(),
                 window_name:  Some(record[1].to_string()),
                 duration
             }
@@ -144,7 +144,7 @@ impl LogDurationList {
 
     fn get_max_log_name_length(&self) -> usize {
         self.log_durations.iter()
-        .map(|l| l.window_class_name.len())
+        .map(|l| l.window_class.len())
         .max()
         .unwrap()
 
@@ -153,7 +153,7 @@ impl LogDurationList {
     fn from_duration_hash_map(map: HashMap<&str, Duration>) -> Self {
         let mut log_durations = map.iter()
                 .map(|t| LogDuration {
-                    window_class_name: String::from(*t.0),
+                    window_class: String::from(*t.0),
                     window_name: None,
                     duration: *t.1
                 })
@@ -167,7 +167,7 @@ impl LogDurationList {
     fn from_name_and_duration_hash_map(map: HashMap<(&str, &str), Duration>) -> Self {
         let mut log_durations = map.iter()
                 .map(|t| LogDuration {
-                    window_class_name: String::from(t.0.0),
+                    window_class: String::from(t.0.0),
                     window_name: Some(String::from(t.0.1)),
                     duration: *t.1
                 })
@@ -183,7 +183,7 @@ impl LogDurationList {
 
         for log_duration in &self.log_durations {
             let index = (
-                log_duration.window_class_name.as_str(),
+                log_duration.window_class.as_str(),
                 log_duration.window_name.as_ref().unwrap().as_str()
             );
             match map.get(&index) {
@@ -199,7 +199,7 @@ impl LogDurationList {
         let mut map: HashMap<&str, Duration> = HashMap::new();
 
         for log_duration in &self.log_durations {
-            let index = log_duration.window_class_name.as_str();
+            let index = log_duration.window_class.as_str();
             match map.get(index) {
                 Some(&duration) => map.insert(index, duration + log_duration.duration),
                 _ =>  map.insert(index, log_duration.duration)
@@ -216,7 +216,7 @@ impl LogDurationList {
                 continue
             }
             println!("{:pad$}: {}",
-                log_duration.window_class_name,
+                log_duration.window_class,
                 log_duration.pretty_duration(),
                 pad=padding);
         }
