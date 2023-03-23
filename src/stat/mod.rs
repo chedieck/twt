@@ -92,9 +92,22 @@ impl LogDurationList {
         }
     }
 
-    pub fn create_for_scope(begin_date_str: &str, end_date_str: &str) -> Result<Self, Box<dyn Error>> {
-        let begin = iso_to_timestamp_millis(begin_date_str)?;
-        let end = iso_to_timestamp_millis(end_date_str)?;
+    pub fn create_for_scope(begin: i64, end: i64) -> Result<Self, Box<dyn Error>> {
+        let mut rdr = Self::get_reader()?;
+        let mut log_durations: Vec<LogDuration> = vec![];
+        for result in rdr.records() {
+            let record = result?;
+            let duration = get_record_duration_for_scope(begin, end, &record)?;
+            let log_duration = LogDuration::from_record_on_duration(record, duration)?;
+            log_durations.push(log_duration)
+        }
+
+        Ok(Self::from_vec(log_durations))
+    }
+
+    pub fn create_for_last_duration(duration: Duration) -> Result<Self, Box<dyn Error>> {
+        let end = chrono::Utc::now().timestamp_millis();
+        let begin = end - duration.num_milliseconds();
 
 
         let mut rdr = Self::get_reader()?;
