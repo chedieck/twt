@@ -209,7 +209,7 @@ impl LogDurationList {
         Self::from_duration_hash_map(map)
     }
 
-    pub fn show_simple_use_list(&self) {
+    pub fn show_class_usage_list(&self) {
         let padding = self.get_max_log_name_length() + 1;
         for log_duration in &self.log_durations {
             if log_duration.duration.num_milliseconds() == 0 {
