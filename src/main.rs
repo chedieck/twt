@@ -157,17 +157,18 @@ fn run() -> Result<(), Box<dyn Error>> {
 
 fn help() {
     println!("Usage: twt [command] [..args]");
-    println!("[command]    [..args]                   description");
-    println!("-------");
-    println!("run          Collect window usage information and save it to $HOME/.local/share/twt/main.csv.");
-    println!("             This should be ran as a daemon, can't be run twice.");
-    println!("topc         [start_date] [end_date]    Shows most used programs between the two dates, by window class");
-    println!("topn         [start_date] [end_date]    Shows most used programs between the two dates, by window name");
-    println!("lastcn       [n]                        Shows the time spent on the last [n] logs");
-    println!("lastnn       [n]                        Shows the time spent on the last [n] logs");
-    println!("-------");
-    println!("[start_date] and [end_date] should be ISO formatted strings on UTC timezone,");
-    println!("that is: %Y-%m-%d %H:%M:%S, such as e.g: 2023-03-13 17:29:00.");
+    println!("[command]  [..args]                     description");
+    println!("---------------------------------------------------");
+    println!("help                                    Show this message.");
+    println!("run                                     Start twt");
+    println!();
+    println!("stat       [last|span] [n|c] [..args]   Get information about used windows, by [c]lass or [n]ame:");
+    println!("            span [n|c] [begin] [end]    Shows most used programs between the two dates");
+    println!("            last [n|c] [duration]       Shows most used programs on the last [duration]");
+    println!("-------------------------------------------------------------------------------------------------------");
+    println!("[begin] and [end] should be ISO formatted strings on UTC timezone:");
+    println!("   %Y-%m-%d %H:%M:%S, e.g: 2023-03-13 17:29:00.");
+    println!("[duration] is something like 1h, 2d, 1s, 800ms etc.");
 }
 
 fn str_to_duration(duration_str: &str) -> chrono::Duration {
@@ -177,40 +178,69 @@ fn str_to_duration(duration_str: &str) -> chrono::Duration {
 
 fn parse_args(args: Vec<String>) -> Result<(), Box<dyn Error>> {
     match args[1].as_str() {
+        "help" => {
+            help();
+            Ok(())
+        }
         "run" => {
             run()?;
             Ok(())
-        },
-        "nspan" => {
-            let begin = stat::iso_to_timestamp_millis(&args[2])?;
-            let end = stat::iso_to_timestamp_millis(&args[3])?;
+        }
+        "stat" => {
+            match args[2].as_str() {
+                "last" => {
+                    if args.len() < 5 {
+                        help();
+                        return Err("Missing arguments.".into())
+                    }
+                    let duration_str = &args[4];
+                    let duration = str_to_duration(duration_str);
+                    let log_duration_list = stat::LogDurationList::create_for_last_duration(duration)?;
+                    match args[3].as_str() {
+                        "n" => {
+                            log_duration_list.log_durations_condensed_by_class_and_name().show_simple_use_list();
+                            Ok(())
+                        }
+                        "c" => {
+                            log_duration_list.log_durations_condensed_by_class().show_simple_use_list();
+                            Ok(())
+                        }
+                        _ => {
+                            help();
+                            Err("Wrong argument for `twt stat last`, should be of of [n|c].".into())
+                        }
+                    }
+                }
+                "span" => {
+                    if args.len() < 6 {
+                        help();
+                        return Err("Missing arguments.".into())
+                    }
+                    let begin = stat::iso_to_timestamp_millis(&args[4])?;
+                    let end = stat::iso_to_timestamp_millis(&args[5])?;
 
-            let log_duration_list = stat::LogDurationList::create_for_scope(begin, end)?;
-            log_duration_list.log_durations_condensed_by_class().show_simple_use_list();
-            Ok(())
-        },
-        "cspan" => {
-            let begin = stat::iso_to_timestamp_millis(&args[2])?;
-            let end = stat::iso_to_timestamp_millis(&args[3])?;
-
-            let log_duration_list = stat::LogDurationList::create_for_scope(begin, end)?;
-            log_duration_list.log_durations_condensed_by_class_and_name().show_simple_use_list();
-            Ok(())
-        },
-        "clast" => {
-            let duration_str = &args[2];
-            let duration = str_to_duration(duration_str);
-            let log_duration_list = stat::LogDurationList::create_for_last_duration(duration)?;
-            log_duration_list.log_durations_condensed_by_class().show_simple_use_list();
-            Ok(())
-        },
-        "nlast" => {
-            let duration_str = &args[2];
-            let duration = str_to_duration(duration_str);
-            let log_duration_list = stat::LogDurationList::create_for_last_duration(duration)?;
-            log_duration_list.log_durations_condensed_by_class_and_name().show_simple_use_list();
-            Ok(())
-        },
+                    let log_duration_list = stat::LogDurationList::create_for_scope(begin, end)?;
+                    match args[3].as_str() {
+                        "n" => {
+                            log_duration_list.log_durations_condensed_by_class_and_name().show_simple_use_list();
+                            Ok(())
+                        }
+                        "c" => {
+                            log_duration_list.log_durations_condensed_by_class().show_simple_use_list();
+                            Ok(())
+                        }
+                        _ => {
+                            help();
+                            Err("Wrong argument for `twt stat span`, should be of of [n|c].".into())
+                        }
+                    }
+                }
+                _ => {
+                    help();
+                    Err("Wrong argument for `twt stat`, should be one of [span|last].".into())
+                }
+            }
+        }
         _ => {
             help();
             Ok(())
@@ -226,7 +256,7 @@ fn main() -> Result<(), Box<dyn Error>> {
             Ok(())
         },
         _ => {
-            parse_args(args);
+            parse_args(args)?;
             Ok(())
         }
     }
