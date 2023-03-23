@@ -225,7 +225,7 @@ pub fn iso_to_timestamp_millis(date_str: &str) -> Result<i64, Box<dyn Error>> {
 
 fn get_record_duration_for_scope(lower_limit: i64, upper_limit: i64, record: &csv::StringRecord) -> Result<Duration, Box<dyn Error>> {
     let record_start = record[2].parse::<i64>()?;
-    let record_end = record[3].parse::<i64>()?;
+    let record_end = record[3].parse::<i64>().unwrap();
 
     if record_end < lower_limit || record_start > upper_limit {
         return Ok(
