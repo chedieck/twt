@@ -210,6 +210,9 @@ impl LogDurationList {
     pub fn show_simple_use_list(&self) {
         let padding = self.get_max_log_name_length() + 1;
         for log_duration in &self.log_durations {
+            if log_duration.duration.num_milliseconds() == 0 {
+                continue
+            }
             println!("{:pad$}: {}",
                 log_duration.window_class_name,
                 log_duration.pretty_duration(),
