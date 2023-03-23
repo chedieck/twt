@@ -10,3 +10,4 @@ csv = "1.2.0"
 chrono = "0.4.23"
 dirs = "4.0"
 duration-string = "0.3"
+xcb = { version = "1.2.0", features = ["screensaver"] }
