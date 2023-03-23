@@ -2,6 +2,7 @@ use std::process::Command;
 use std::fs::OpenOptions;
 use std::io::prelude::*;
 use std::error::Error;
+use duration_string::DurationString;
 use std::path;
 
 mod stat;
@@ -170,6 +171,54 @@ fn help() {
     println!("that is: %Y-%m-%d %H:%M:%S, such as e.g: 2023-03-13 17:29:00.");
 }
 
+fn str_to_duration(duration_str: &str) -> chrono::Duration {
+    let dur: std::time::Duration = DurationString::from_string(String::from(duration_str)).unwrap().into();
+    chrono::Duration::from_std(dur).unwrap()
+}
+
+fn parse_args(args: Vec<String>) -> Result<(), Box<dyn Error>> {
+    match args[1].as_str() {
+        "run" => {
+            run()?;
+            Ok(())
+        },
+        "nspan" => {
+            let begin = stat::iso_to_timestamp_millis(&args[2])?;
+            let end = stat::iso_to_timestamp_millis(&args[3])?;
+
+            let log_duration_list = stat::LogDurationList::create_for_scope(begin, end)?;
+            log_duration_list.log_durations_condensed_by_class().show_simple_use_list();
+            Ok(())
+        },
+        "cspan" => {
+            let begin = stat::iso_to_timestamp_millis(&args[2])?;
+            let end = stat::iso_to_timestamp_millis(&args[3])?;
+
+            let log_duration_list = stat::LogDurationList::create_for_scope(begin, end)?;
+            log_duration_list.log_durations_condensed_by_class_and_name().show_simple_use_list();
+            Ok(())
+        },
+        "clast" => {
+            let duration_str = &args[2];
+            let duration = str_to_duration(duration_str);
+            let log_duration_list = stat::LogDurationList::create_for_last_duration(duration)?;
+            log_duration_list.log_durations_condensed_by_class().show_simple_use_list();
+            Ok(())
+        },
+        "nlast" => {
+            let duration_str = &args[2];
+            let duration = str_to_duration(duration_str);
+            let log_duration_list = stat::LogDurationList::create_for_last_duration(duration)?;
+            log_duration_list.log_durations_condensed_by_class_and_name().show_simple_use_list();
+            Ok(())
+        },
+        _ => {
+            help();
+            Ok(())
+        }
+    }
+}
+
 fn main() -> Result<(), Box<dyn Error>> {
     let args: Vec<String> = std::env::args().collect();
     match args.len() {
@@ -178,38 +227,8 @@ fn main() -> Result<(), Box<dyn Error>> {
             Ok(())
         },
         _ => {
-            match args[1].as_str() {
-                "run" => {
-                    run()?;
-                    Ok(())
-                },
-                "topc" => {
-                    let log_duration_list = stat::LogDurationList::create_for_scope(&args[2], &args[3])?;
-                    log_duration_list.log_durations_condensed_by_class().show_simple_use_list();
-                    Ok(())
-                },
-                "topn" => {
-                    let log_duration_list = stat::LogDurationList::create_for_scope(&args[2], &args[3])?;
-                    log_duration_list.log_durations_condensed_by_class_and_name().show_simple_use_list();
-                    Ok(())
-                },
-                "lastcn" => {
-                    let n = args[2].parse::<usize>()?;
-                    let log_duration_list = stat::LogDurationList::create_for_last_n(&n)?;
-                    log_duration_list.log_durations_condensed_by_class().show_simple_use_list();
-                    Ok(())
-                },
-                "lastnn" => {
-                    let n = args[2].parse::<usize>()?;
-                    let log_duration_list = stat::LogDurationList::create_for_last_n(&n)?;
-                    log_duration_list.log_durations_condensed_by_class_and_name().show_simple_use_list();
-                    Ok(())
-                },
-                _ => {
-                    help();
-                    Ok(())
-                }
-            }
+            parse_args(args);
+            Ok(())
         }
     }
 }

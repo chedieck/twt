@@ -158,6 +158,12 @@ dependencies = [
 ]
 
 [[package]]
+name = "duration-string"
+version = "0.3.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "6fcc1d9ae294a15ed05aeae8e11ee5f2b3fe971c077d45a42fb20825fba6ee13"
+
+[[package]]
 name = "getrandom"
 version = "0.2.8"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -376,6 +382,7 @@ dependencies = [
  "chrono",
  "csv",
  "dirs",
+ "duration-string",
 ]
 
 [[package]]

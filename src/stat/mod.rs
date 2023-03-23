@@ -205,7 +205,7 @@ impl LogDurationList {
     }
 }
 
-fn iso_to_timestamp_millis(date_str: &str) -> Result<i64, Box<dyn Error>> {
+pub fn iso_to_timestamp_millis(date_str: &str) -> Result<i64, Box<dyn Error>> {
     let naive_datetime = Utc.datetime_from_str(date_str, EXPECTED_DATE_FORMAT)?;
     Ok(naive_datetime.timestamp_millis())
 }
