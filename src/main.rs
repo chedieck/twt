@@ -171,12 +171,12 @@ fn run() -> Result<(), Box<dyn Error>> {
             start_new_log = true;
             continue;
         };
-        set_end_on_last_entry()?;
         if start_new_log {
             set_new_log(&current_window_log)?;
             last_log = current_window_log.clone();
             start_new_log = false
         }
+        set_end_on_last_entry()?;
         if !current_window_log.same_window_as(&last_log) {
             start_new_log = true
         }
