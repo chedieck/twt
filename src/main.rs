@@ -198,7 +198,7 @@ fn parse_args(args: Vec<String>) -> Result<(), Box<dyn Error>> {
                     let log_duration_list = stat::LogDurationList::create_for_last_duration(duration)?;
                     match args[3].as_str() {
                         "n" => {
-                            log_duration_list.log_durations_condensed_by_class_and_name().show_class_usage_list();
+                            log_duration_list.log_durations_condensed_by_class_and_name().show_name_usage_list();
                             Ok(())
                         }
                         "c" => {
@@ -222,7 +222,7 @@ fn parse_args(args: Vec<String>) -> Result<(), Box<dyn Error>> {
                     let log_duration_list = stat::LogDurationList::create_for_scope(begin, end)?;
                     match args[3].as_str() {
                         "n" => {
-                            log_duration_list.log_durations_condensed_by_class_and_name().show_class_usage_list();
+                            log_duration_list.log_durations_condensed_by_class_and_name().show_name_usage_list();
                             Ok(())
                         }
                         "c" => {
