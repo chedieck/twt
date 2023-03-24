@@ -127,6 +127,7 @@ fn start () -> Result<Log, Box<dyn Error>>  {
         return start()
     };
     set_new_log(&first_log)?;
+    set_end_on_last_entry()?;
     Ok(first_log)
 }
 
