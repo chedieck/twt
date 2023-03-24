@@ -43,8 +43,6 @@ impl LogDuration {
         )
     }
 
-
-
     fn pretty_duration(&self) -> String {
         match self.duration.num_seconds() {
             n if n < 1 => format!("{}ms", self.duration.num_milliseconds()),
@@ -75,6 +73,28 @@ impl LogDuration {
                 self.duration.num_seconds() % 60
             ),
         }
+    }
+}
+
+pub enum LogColumn {
+    Name,
+    Class
+}
+
+impl LogColumn {
+    pub fn from_arg(arg: &str) -> Result<LogColumn, Box<dyn Error>> {
+        match arg {
+            "n" => {
+                Ok(LogColumn::Name)
+            }
+            "c" => {
+                Ok(LogColumn::Class)
+            }
+            _ => {
+                Err("Wrong argument for `twt stat [last|span]`, should be one of [n|c].".into())
+            }
+        }
+
     }
 }
 
@@ -158,19 +178,13 @@ impl LogDurationList {
         Ok(Self::from_vec(log_durations))
     }
 
-    fn get_max_log_class_length(&self) -> usize {
-        self.log_durations.iter()
-        .map(|l| l.window_class.len())
-        .max()
-        .unwrap()
-
-    }
-
-    fn get_max_log_name_length(&self) -> usize {
-        self.log_durations.iter()
-        .map(|l| l.window_name.as_ref().unwrap_or(&"".to_string()).len())
-        .max()
-        .unwrap()
+    fn get_max_log_length(&self, log_column: &LogColumn) -> usize {
+        let iter = self.log_durations.iter();
+        let max = match log_column {
+            LogColumn::Class => iter.map(|l| l.window_class.len()).max(),
+            LogColumn::Name => iter.map(|l| l.window_name.as_ref().unwrap_or(&"".to_string()).len()).max()
+        };
+        max.unwrap()
 
     }
 
@@ -235,21 +249,16 @@ impl LogDurationList {
         Self::from_duration_hash_map(map)
     }
 
-    pub fn show_name_usage_list(&self) {
-        let padding = self.get_max_log_name_length() + 1;
+    pub fn show_usage_list(&self, log_column: &LogColumn) {
+        let padding = self.get_max_log_length(log_column) + 1;
         for log_duration in &self.log_durations {
+            let temp = &String::from("");
+            let title = match log_column {
+                LogColumn::Name => log_duration.window_name.as_ref().unwrap_or(temp),
+                LogColumn::Class => &log_duration.window_class
+            };
             println!("{:pad$}: {}",
-                log_duration.window_name.as_ref().unwrap_or(&"".to_string()),
-                log_duration.pretty_duration(),
-                pad=padding);
-        }
-    }
-
-    pub fn show_class_usage_list(&self) {
-        let padding = self.get_max_log_class_length() + 1;
-        for log_duration in &self.log_durations {
-            println!("{:pad$}: {}",
-                log_duration.window_class,
+                title,
                 log_duration.pretty_duration(),
                 pad=padding);
         }

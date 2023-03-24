@@ -6,6 +6,7 @@ use duration_string::DurationString;
 use std::path;
 use xcb::x::Window;
 use xcb::Connection;
+use stat::LogColumn;
 
 mod stat;
 
@@ -205,36 +206,14 @@ fn str_to_duration(duration_str: &str) -> chrono::Duration {
     chrono::Duration::from_std(dur).unwrap()
 }
 
-enum LogDurationGroup {
-    Name,
-    Class
-}
-
-impl LogDurationGroup {
-    fn from_arg(arg: &str) -> Result<LogDurationGroup, Box<dyn Error>> {
-        match arg {
-            "n" => {
-                Ok(LogDurationGroup::Name)
-            }
-            "c" => {
-                Ok(LogDurationGroup::Class)
-            }
-            _ => {
-                Err("Wrong argument for `twt stat [last|span]`, should be one of [n|c].".into())
-            }
-        }
-
-    }
-}
-
-fn parse_log_durations (log_duration_list: stat::LogDurationList, log_duration_group: LogDurationGroup) -> Result<(), Box<dyn Error>> {
-    match log_duration_group {
-        LogDurationGroup::Name => {
-            log_duration_list.log_durations_condensed_by_class_and_name().show_name_usage_list();
+fn parse_log_durations (log_duration_list: stat::LogDurationList, log_column: LogColumn, regex_pattern: Option<String>) -> Result<(), Box<dyn Error>> {
+    match log_column {
+        LogColumn::Name => {
+            log_duration_list.log_durations_condensed_by_class_and_name().show_usage_list(&LogColumn::Name);
             Ok(())
         }
-        LogDurationGroup::Class => {
-            log_duration_list.log_durations_condensed_by_class().show_class_usage_list();
+        LogColumn::Class => {
+            log_duration_list.log_durations_condensed_by_class().show_usage_list(&LogColumn::Class);
             Ok(())
         }
     }
@@ -260,8 +239,9 @@ fn parse_args(args: Vec<String>) -> Result<(), Box<dyn Error>> {
                     let duration_str = &args[4];
                     let duration = str_to_duration(duration_str);
                     let log_duration_list = stat::LogDurationList::create_for_last_duration(duration)?;
-                    let log_duration_group = LogDurationGroup::from_arg(args[3].as_str())?;
-                    parse_log_durations(log_duration_list, log_duration_group)
+                    let log_column = LogColumn::from_arg(args[3].as_str())?;
+                    let regex_pattern: Option<String> = args.get(5).cloned();
+                    parse_log_durations(log_duration_list, log_column, regex_pattern)
                 }
                 "span" => {
                     if args.len() < 6 {
@@ -272,8 +252,9 @@ fn parse_args(args: Vec<String>) -> Result<(), Box<dyn Error>> {
                     let end = stat::iso_to_timestamp_millis(&args[5])?;
 
                     let log_duration_list = stat::LogDurationList::create_for_scope(begin, end)?;
-                    let log_duration_group = LogDurationGroup::from_arg(args[3].as_str())?;
-                    parse_log_durations(log_duration_list, log_duration_group)
+                    let log_column = LogColumn::from_arg(args[3].as_str())?;
+                    let regex_pattern: Option<String> = args.get(5).cloned();
+                    parse_log_durations(log_duration_list, log_column, regex_pattern)
                 }
                 _ => {
                     help();
