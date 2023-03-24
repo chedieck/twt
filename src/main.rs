@@ -29,6 +29,17 @@ impl Log {
         && self.window_name == other_log.window_name
     }
 
+    fn from_record(record: csv::StringRecord) -> Result<Self, Box<dyn Error>> {
+        Ok(
+            Self {
+                window_class:record[0].to_string(),
+                window_name:record[1].to_string(),
+                start: Some(record[2].parse::<i64>()?),
+                end: Some(record[3].parse::<i64>()?)
+            }
+        )
+    }
+
     fn to_csv_line(&self) -> Result<String, Box<dyn Error>> {
         match self.start {
             Some(start) => {
@@ -207,16 +218,9 @@ fn str_to_duration(duration_str: &str) -> chrono::Duration {
 }
 
 fn parse_log_durations (log_duration_list: stat::LogDurationList, log_column: LogColumn, regex_pattern: Option<String>) -> Result<(), Box<dyn Error>> {
-    match log_column {
-        LogColumn::Name => {
-            log_duration_list.log_durations_condensed_by_class_and_name().show_usage_list(&LogColumn::Name);
-            Ok(())
-        }
-        LogColumn::Class => {
-            log_duration_list.log_durations_condensed_by_class().show_usage_list(&LogColumn::Class);
-            Ok(())
-        }
-    }
+    let view = log_duration_list.get_view_for_log_column(&log_column);
+    view.show_usage_list();
+    Ok(())
 }
 
 fn parse_args(args: Vec<String>) -> Result<(), Box<dyn Error>> {

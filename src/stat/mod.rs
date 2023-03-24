@@ -9,40 +9,61 @@ use std::process::Command;
 const EXPECTED_DATE_FORMAT: &str = "%Y-%m-%d %H:%M:%S";
 
 struct LogDuration {
-    window_class: String,
-    window_name: Option<String>,
+    log: Log,
+    title: Option<String>,
     duration: Duration
+}
+
+struct LogDurationView {
+    title: String,
+    duration: Duration
+}
+
+pub struct LogDurationListView {
+    log_duration_views: Vec<LogDurationView>
 }
 
 pub struct LogDurationList {
     log_durations: Vec<LogDuration>
 }
 
-impl LogDuration {
-    fn from_record(record: csv::StringRecord) -> Result<Self, Box<dyn Error>> {
-        let record_start = record[2].parse::<i64>()?;
-        let record_end = record[3].parse::<i64>()?;
-
-        let duration = Duration::milliseconds(record_end - record_start);
-        Ok(
-            Self {
-                window_class:  record[0].to_string(),
-                window_name:  Some(record[1].to_string()),
-                duration
-            }
-        )
+impl LogDurationListView {
+    fn from_duration_hash_map(map: HashMap<&str, Duration>) -> Self {
+        let mut log_duration_views = map.iter()
+            .filter(|t| t.1.num_milliseconds() != 0)
+            .map(|t| LogDurationView {
+                title: String::from(*t.0),
+                duration: *t.1
+            })
+        .collect::<Vec<LogDurationView>>();
+        log_duration_views.sort_by(|a, b| b.duration.partial_cmp(&a.duration).unwrap());
+        Self {
+            log_duration_views
+        }
     }
 
-    fn from_record_on_duration (record: csv::StringRecord, duration: Duration) -> Result<Self, Box<dyn Error>> {
-        Ok(
-            Self {
-                window_class:  record[0].to_string(),
-                window_name:  Some(record[1].to_string()),
-                duration
-            }
-        )
+    fn get_max_title_length(&self) -> usize {
+        self.log_duration_views
+            .iter()
+            .map(|l| l.title.len())
+            .max()
+            .unwrap()
     }
 
+    pub fn show_usage_list(&self) {
+        let padding = self.get_max_title_length() + 1;
+        for log_duration_view in &self.log_duration_views {
+            let temp = &String::from("");
+            println!("{:pad$}: {}",
+                log_duration_view.title,
+                log_duration_view.pretty_duration(),
+                pad=padding);
+        }
+    }
+}
+
+
+impl LogDurationView {
     fn pretty_duration(&self) -> String {
         match self.duration.num_seconds() {
             n if n < 1 => format!("{}ms", self.duration.num_milliseconds()),
@@ -73,6 +94,32 @@ impl LogDuration {
                 self.duration.num_seconds() % 60
             ),
         }
+    }
+}
+
+impl LogDuration {
+    fn from_record(record: csv::StringRecord) -> Result<Self, Box<dyn Error>> {
+        let log = Log::from_record(record)?;
+
+        let duration = Duration::milliseconds(log.end.unwrap() - log.start.unwrap());
+        Ok(
+            Self {
+                log,
+                title: None,
+                duration
+            }
+        )
+    }
+
+    fn from_record_on_duration (record: csv::StringRecord, duration: Duration) -> Result<Self, Box<dyn Error>> {
+        let log = Log::from_record(record)?;
+        Ok(
+            Self {
+                log,
+                title: None,
+                duration
+            }
+        )
     }
 }
 
@@ -107,8 +154,8 @@ mod tests {
         let record = csv::StringRecord::from(vec!["kitty", "bash", "1678898607940", "1678898608940"]);
 
         let log_duration = LogDuration::from_record(record).unwrap();
-        assert_eq!(log_duration.window_name, Some(String::from("bash")));
-        assert_eq!(log_duration.window_class, String::from("kitty"));
+        assert_eq!(log_duration.log.window_name, String::from("bash"));
+        assert_eq!(log_duration.log.window_class, String::from("kitty"));
         assert_eq!(log_duration.duration, Duration::seconds(1));
     }
 }
@@ -178,90 +225,21 @@ impl LogDurationList {
         Ok(Self::from_vec(log_durations))
     }
 
-    fn get_max_log_length(&self, log_column: &LogColumn) -> usize {
-        let iter = self.log_durations.iter();
-        let max = match log_column {
-            LogColumn::Class => iter.map(|l| l.window_class.len()).max(),
-            LogColumn::Name => iter.map(|l| l.window_name.as_ref().unwrap_or(&"".to_string()).len()).max()
-        };
-        max.unwrap()
-
-    }
-
-    fn from_duration_hash_map(map: HashMap<&str, Duration>) -> Self {
-        let mut log_durations = map.iter()
-            .filter(|t| t.1.num_milliseconds() != 0)
-            .map(|t| LogDuration {
-                window_class: String::from(*t.0),
-                window_name: None,
-                duration: *t.1
-            })
-        .collect::<Vec<LogDuration>>();
-        log_durations.sort_by(|a, b| b.duration.partial_cmp(&a.duration).unwrap());
-        Self {
-            log_durations
-        }
-    }
-
-    fn from_name_and_duration_hash_map(map: HashMap<(&str, &str), Duration>) -> Self {
-        let mut log_durations = map.iter()
-                .filter(|t| t.1.num_milliseconds() != 0)
-                .map(|t| LogDuration {
-                    window_class: String::from(t.0.0),
-                    window_name: Some(String::from(t.0.1)),
-                    duration: *t.1
-                })
-            .collect::<Vec<LogDuration>>();
-        log_durations.sort_by(|a, b| b.duration.partial_cmp(&a.duration).unwrap());
-         Self {
-            log_durations
-        }
-    }
-
-    pub fn log_durations_condensed_by_class_and_name(&self) -> Self {
-        let mut map: HashMap<(&str, &str), Duration> = HashMap::new();
-
-        for log_duration in &self.log_durations {
-            let index = (
-                log_duration.window_class.as_str(),
-                log_duration.window_name.as_ref().unwrap().as_str()
-            );
-            match map.get(&index) {
-                Some(&duration) => map.insert(index, duration + log_duration.duration),
-                _ =>  map.insert(index, log_duration.duration)
-            };
-        }
-
-        Self::from_name_and_duration_hash_map(map)
-    }
-
-    pub fn log_durations_condensed_by_class(&self) -> Self {
+    pub fn get_view_for_log_column(&self, log_column: &LogColumn) -> LogDurationListView {
         let mut map: HashMap<&str, Duration> = HashMap::new();
 
         for log_duration in &self.log_durations {
-            let index = log_duration.window_class.as_str();
+            let index = match log_column {
+                LogColumn::Name => log_duration.log.window_class.as_str(),
+                LogColumn::Class => log_duration.log.window_name.as_str(),
+            };
             match map.get(index) {
                 Some(&duration) => map.insert(index, duration + log_duration.duration),
                 _ =>  map.insert(index, log_duration.duration)
             };
         }
 
-        Self::from_duration_hash_map(map)
-    }
-
-    pub fn show_usage_list(&self, log_column: &LogColumn) {
-        let padding = self.get_max_log_length(log_column) + 1;
-        for log_duration in &self.log_durations {
-            let temp = &String::from("");
-            let title = match log_column {
-                LogColumn::Name => log_duration.window_name.as_ref().unwrap_or(temp),
-                LogColumn::Class => &log_duration.window_class
-            };
-            println!("{:pad$}: {}",
-                title,
-                log_duration.pretty_duration(),
-                pad=padding);
-        }
+        LogDurationListView::from_duration_hash_map(map)
     }
 }
 
