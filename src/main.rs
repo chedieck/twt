@@ -7,6 +7,7 @@ use std::path;
 use xcb::x::Window;
 use xcb::Connection;
 use stat::LogColumn;
+use regex::Regex;
 
 mod stat;
 
@@ -217,8 +218,14 @@ fn str_to_duration(duration_str: &str) -> chrono::Duration {
     chrono::Duration::from_std(dur).unwrap()
 }
 
-fn parse_log_durations (log_duration_list: stat::LogDurationList, log_column: LogColumn, regex_pattern: Option<String>) -> Result<(), Box<dyn Error>> {
-    let view = log_duration_list.get_view_for_log_column(&log_column);
+fn regex_from_arg(arg: Option<&String>) -> Option<Regex> {
+    match arg {
+        Some(s) => Some(Regex::new(s).unwrap()),
+        None => None
+    }
+}
+fn parse_log_durations (log_duration_list: stat::LogDurationList, log_column: LogColumn, regex_pattern: Option<Regex>) -> Result<(), Box<dyn Error>> {
+    let view = log_duration_list.get_view_for_log_column(&log_column, regex_pattern.as_ref());
     view.show_usage_list();
     Ok(())
 }
@@ -244,7 +251,7 @@ fn parse_args(args: Vec<String>) -> Result<(), Box<dyn Error>> {
                     let duration = str_to_duration(duration_str);
                     let log_duration_list = stat::LogDurationList::create_for_last_duration(duration)?;
                     let log_column = LogColumn::from_arg(args[3].as_str())?;
-                    let regex_pattern: Option<String> = args.get(5).cloned();
+                    let regex_pattern = regex_from_arg(args.get(5));
                     parse_log_durations(log_duration_list, log_column, regex_pattern)
                 }
                 "span" => {
@@ -257,7 +264,7 @@ fn parse_args(args: Vec<String>) -> Result<(), Box<dyn Error>> {
 
                     let log_duration_list = stat::LogDurationList::create_for_scope(begin, end)?;
                     let log_column = LogColumn::from_arg(args[3].as_str())?;
-                    let regex_pattern: Option<String> = args.get(5).cloned();
+                    let regex_pattern = regex_from_arg(args.get(5));
                     parse_log_durations(log_duration_list, log_column, regex_pattern)
                 }
                 _ => {

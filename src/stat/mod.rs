@@ -225,13 +225,18 @@ impl LogDurationList {
         Ok(Self::from_vec(log_durations))
     }
 
-    pub fn get_view_for_log_column(&self, log_column: &LogColumn) -> LogDurationListView {
+    pub fn get_view_for_log_column(&self, log_column: &LogColumn, regex_pattern: Option<&regex::Regex>) -> LogDurationListView {
         let mut map: HashMap<&str, Duration> = HashMap::new();
 
         for log_duration in &self.log_durations {
             let index = match log_column {
                 LogColumn::Name => log_duration.log.window_class.as_str(),
                 LogColumn::Class => log_duration.log.window_name.as_str(),
+            };
+            if let Some(re) = regex_pattern {
+                if !re.is_match(index) {
+                    continue
+                }
             };
             match map.get(index) {
                 Some(&duration) => map.insert(index, duration + log_duration.duration),
