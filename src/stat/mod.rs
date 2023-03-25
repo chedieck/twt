@@ -230,8 +230,8 @@ impl LogDurationList {
 
         for log_duration in &self.log_durations {
             let index = match log_column {
-                LogColumn::Name => log_duration.log.window_class.as_str(),
-                LogColumn::Class => log_duration.log.window_name.as_str(),
+                LogColumn::Class => log_duration.log.window_class.as_str(),
+                LogColumn::Name => log_duration.log.window_name.as_str(),
             };
             if let Some(re) = regex_pattern {
                 if !re.is_match(index) {
