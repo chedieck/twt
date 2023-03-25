@@ -17,3 +17,7 @@ uninstall:
 	systemctl --user stop twt
 	systemctl --user disable twt
 	rm ${HOME}/.config/systemd/user/twt.service
+
+reinstall:
+	systemctl --user stop twt
+	make install
