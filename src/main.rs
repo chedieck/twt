@@ -200,18 +200,19 @@ fn run() -> Result<(), Box<dyn Error>> {
 
 fn help() {
     println!("Usage: twt [command] [..args]");
-    println!("[command]  [..args]                     description");
-    println!("---------------------------------------------------");
-    println!("help                                    Show this message.");
-    println!("run                                     Start twt");
+    println!("[command]  [..args]                        description");
+    println!("------------------------------------------------------");
+    println!("help                                       Show this message.");
+    println!("run                                        Start twt");
     println!();
-    println!("stat       [last|span] [n|c] [..args]   Get information about used windows, by [c]lass or [n]ame:");
-    println!("            span [n|c] [begin] [end]    Shows most used programs between the two dates");
-    println!("            last [n|c] [duration]       Shows most used programs on the last [duration]");
+    println!("stat       [last|span] [n|c] [..args]      Get information about used windows, by [c]lass or [n]ame:");
+    println!("            span [n|c] [begin] [end] [?re] Shows most used programs between the two dates");
+    println!("            last [n|c] [duration]    [?re] Shows most used programs on the last [duration]");
     println!("-------------------------------------------------------------------------------------------------------");
     println!("[begin] and [end] should be ISO formatted strings on UTC timezone:");
     println!("   %Y-%m-%d %H:%M:%S, e.g: 2023-03-13 17:29:00.");
     println!("[duration] is something like 1h, 2d, 1s, 800ms etc.");
+    println!("[?re] is an optional regex string to filter by.");
 }
 
 fn str_to_duration(duration_str: &str) -> chrono::Duration {
@@ -220,10 +221,7 @@ fn str_to_duration(duration_str: &str) -> chrono::Duration {
 }
 
 fn regex_from_arg(arg: Option<&String>) -> Option<Regex> {
-    match arg {
-        Some(s) => Some(Regex::new(s).unwrap()),
-        None => None
-    }
+    arg.map(|s| Regex::new(s).unwrap())
 }
 fn parse_log_durations (log_duration_list: stat::LogDurationList, log_column: LogColumn, regex_pattern: Option<Regex>) -> Result<(), Box<dyn Error>> {
     let view = log_duration_list.get_view_for_log_column(&log_column, regex_pattern.as_ref());
