@@ -45,7 +45,7 @@ impl LogDurationListView {
     fn get_max_title_length(&self) -> usize {
         self.log_duration_views
             .iter()
-            .map(|l| l.title.len())
+            .map(|l| l.title.chars().count())
             .max()
             .unwrap()
     }
@@ -53,7 +53,6 @@ impl LogDurationListView {
     pub fn show_usage_list(&self) {
         let padding = self.get_max_title_length() + 1;
         for log_duration_view in &self.log_duration_views {
-            let temp = &String::from("");
             println!("{:pad$}: {}",
                 log_duration_view.title,
                 log_duration_view.pretty_duration(),
