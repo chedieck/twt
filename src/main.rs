@@ -157,7 +157,23 @@ fn is_running_already() -> Result<bool, Box<dyn Error>> {
     }
     Ok(false)
 }
+
+fn is_something_playing() -> Result<bool, Box<dyn Error>> {
+    let playerctl_output = String::from_utf8(
+        Command::new("playerctl")
+        .arg("status")
+        .output()?
+        .stdout
+    )?
+        .trim()
+        .to_string();
+    Ok(
+        playerctl_output == "Playing"
+    )
+}
+
 fn is_user_afk (conn: &Connection, window: Window, interval_s: u32) -> bool {
+    if is_something_playing().unwrap() { return false }
     let query_info = xcb::screensaver::QueryInfo {
         drawable: xcb::x::Drawable::Window(window)
     };
