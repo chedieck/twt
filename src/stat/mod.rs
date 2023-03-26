@@ -50,13 +50,23 @@ impl LogDurationListView {
             .unwrap_or(0)
     }
 
-    pub fn show_usage_list(&self) {
+    pub fn show_usage_list(&self, regex_pattern: Option<&regex::Regex>) {
         let padding = self.get_max_title_length() + 1;
+        let mut total = Duration::seconds(0);
         for log_duration_view in &self.log_duration_views {
             println!("{:pad$}: {}",
                 log_duration_view.title,
                 log_duration_view.pretty_duration(),
                 pad=padding);
+            total = total + log_duration_view.duration;
+        };
+        if let Some(re) = regex_pattern {
+            let tmp = LogDurationView {
+                title: "".to_string(),
+                duration: total
+            };
+            println!("---");
+            println!("Total for regex '{}': {}", re, tmp.pretty_duration())
         }
     }
 }

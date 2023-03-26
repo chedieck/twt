@@ -256,7 +256,7 @@ fn regex_from_arg(arg: Option<&String>) -> Option<Regex> {
 
 fn parse_log_durations (log_duration_list: stat::LogDurationList, log_column: LogColumn, regex_pattern: Option<Regex>) -> Result<(), Box<dyn Error>> {
     let view = log_duration_list.get_view_for_log_column(&log_column, regex_pattern.as_ref());
-    view.show_usage_list();
+    view.show_usage_list(regex_pattern.as_ref());
     Ok(())
 }
 
