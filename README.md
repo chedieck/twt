@@ -8,7 +8,7 @@ A simple software for X11, written in Rust, to track how much time you spent on 
 After installing the program, running:
 
 ```
-$ cat ~/.local/share/twt/main.csv
+$ tail ~/.local/share/twt/main.csv
 ```
 
 will output something like:
@@ -32,10 +32,16 @@ cd twt
 make install
 ```
 
-Requires `xdotool`.
+Requires `xdotool` and `playerctl`.
 
 
 - `make install` sets up the `twt` binary and starts & enables the `systemd` daemon to run it. You can then control it with `systemd --user stop twt`, for example, if you want it to stop recording activity. If you don't use systemd, run `make install-nosystemd` and run the binary as daemon however you like.
+
+Configuring
+---
+You can set the AFK interval on `~/.config/twt/config.toml`. Default is 60 seconds.
+Notice that if you have anything detectable by `playerctl` playing (such as VLC, webbrowser videos, MPV or Spotify), you will not be considered AFK. Check on `playerctl` documentation for the list of software they support
+
 
 Usage
 ---
