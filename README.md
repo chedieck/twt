@@ -45,9 +45,9 @@ Notice that if you have anything detectable by `playerctl` playing (such as VLC,
 
 Usage
 ---
-- `twt stat last n 5h` will show the most used windows by name, for the last 5 hours.
-- `twt stat span c '2023-03-11 21:50:00'  '2023-03-12 14:30:00'` will show the most used windows by class , from March 11 of 2023 21:50 UTC until March 12 of 2023 14:30 UTC. **Emphasis on UTC**.
-- `twt help` for more.
+- `twt stat last n 5h` will show the time spent in windows (by **n**ame) in the last 5 hours.
+- `twt stat span c '2023-03-11 21:50:00'  '2023-03-12 14:30:00'` will show the time spent on windows by **c**lass , from March 11 of 2023 21:50 UTC until March 12 of 2023 14:30 UTC. **Emphasis on UTC**.
+- `twt stat last n 5h '(YouT|Spot)'` will show the most used windows by name if the name matches the regex pattern `(YouT|Spot)`, for the last 5 hours.
 
 
 
@@ -57,4 +57,4 @@ TODO
 - [x] Avoid having two running instances
 - [x] Better error messages for arg parsing
 - [x] AFK detector
-- [ ] Allow regex tagging on window name
+- [x] Allow regex tagging on window name
