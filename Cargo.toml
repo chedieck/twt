@@ -10,5 +10,8 @@ csv = "1.2.0"
 chrono = "0.4.23"
 dirs = "4.0"
 regex = "1.7.2"
+config-file = "0.2.3"
 duration-string = "0.3"
 xcb = { version = "1.2.0", features = ["screensaver"] }
+
+serde = { version = "1.0", features = ["derive"] }

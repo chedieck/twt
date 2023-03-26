@@ -8,12 +8,24 @@ use xcb::x::Window;
 use xcb::Connection;
 use stat::LogColumn;
 use regex::Regex;
+use config_file::FromConfigFile;
+use serde::Deserialize;
+
+#[derive(Deserialize)]
+struct Config {
+    afk_interval_s: u32,
+}
 
 mod stat;
 
 
 const LOG_CHECK_DELAY_MS: u64 = 100;
-const AFK_INTERVAL_MS: u32 = 5 * 60 * 1000; // 5 minutes
+
+fn get_config() -> Config {
+    Config::from_config_file(
+        dirs::config_dir().unwrap().join("twt/config.toml")
+    ).unwrap()
+}
 
 
 #[derive(Debug, Clone)]
@@ -145,13 +157,13 @@ fn is_running_already() -> Result<bool, Box<dyn Error>> {
     }
     Ok(false)
 }
-fn is_user_afk (conn: &Connection, window: Window) -> bool {
+fn is_user_afk (conn: &Connection, window: Window, interval_s: u32) -> bool {
     let query_info = xcb::screensaver::QueryInfo {
         drawable: xcb::x::Drawable::Window(window)
     };
     let query_info_cookie = conn.send_request(&query_info);
     let query_info_reply = conn.wait_for_reply(query_info_cookie).unwrap();
-    if query_info_reply.ms_since_user_input() > AFK_INTERVAL_MS {
+    if query_info_reply.ms_since_user_input() > (1000 * interval_s) {
         return true
     }
     false
@@ -161,6 +173,8 @@ fn run() -> Result<(), Box<dyn Error>> {
     if is_running_already()? {
         return Err("There is already a running instance.".into())
     }
+
+    let config = get_config();
 
     // Connect to the X server.
     let (conn, screen_num) = xcb::Connection::connect_with_extensions(
@@ -177,7 +191,7 @@ fn run() -> Result<(), Box<dyn Error>> {
     // Update logs on a loop
     loop {
         std::thread::sleep(std::time::Duration::from_millis(LOG_CHECK_DELAY_MS));
-        if is_user_afk(&conn, root_window) {
+        if is_user_afk(&conn, root_window, config.afk_interval_s) {
             start_new_log = true;
             continue
         }
@@ -223,6 +237,7 @@ fn str_to_duration(duration_str: &str) -> chrono::Duration {
 fn regex_from_arg(arg: Option<&String>) -> Option<Regex> {
     arg.map(|s| Regex::new(s).unwrap())
 }
+
 fn parse_log_durations (log_duration_list: stat::LogDurationList, log_column: LogColumn, regex_pattern: Option<Regex>) -> Result<(), Box<dyn Error>> {
     let view = log_duration_list.get_view_for_log_column(&log_column, regex_pattern.as_ref());
     view.show_usage_list();
