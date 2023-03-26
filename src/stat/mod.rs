@@ -47,7 +47,7 @@ impl LogDurationListView {
             .iter()
             .map(|l| l.title.chars().count())
             .max()
-            .unwrap()
+            .unwrap_or(0)
     }
 
     pub fn show_usage_list(&self) {
