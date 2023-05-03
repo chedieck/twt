@@ -264,7 +264,14 @@ pub fn iso_to_timestamp_millis(date_str: &str) -> Result<i64, Box<dyn Error>> {
 
 fn get_record_duration_for_scope(lower_limit: i64, upper_limit: i64, record: &csv::StringRecord) -> Result<Duration, Box<dyn Error>> {
     let record_start = record[2].parse::<i64>()?;
-    let record_end = record[3].parse::<i64>().unwrap();
+    let record_end_result = record[3].parse::<i64>();
+    let record_end = match record_end_result {
+    Ok(val) => val,
+    Err(e) => {
+        println!("Couldn't parse end in record {:#?}. `end` value probably missing.", &record);
+        return Err(Box::new(e))
+    }
+};
 
     if record_end < lower_limit || record_start > upper_limit {
         return Ok(
